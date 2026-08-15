@@ -1,0 +1,140 @@
+{
+  "active": false,
+  "current_phase": "complete",
+  "interview_id": "0cf9a74f-00c7-445e-9fb8-2cffc7579258",
+  "profile": "standard",
+  "type": "greenfield",
+  "initial_idea": "일정 관리 및 알림 앱: 달력에 일정을 입력하면 핸드폰으로 알림",
+  "rounds": [
+    {
+      "round": 1,
+      "target": "intent",
+      "question": "이 앱이 반드시 해결해야 하는 가장 중요한 문제를, 최근 실제로 일정을 놓쳤던 한 가지 사례로 설명해 주세요.",
+      "answer": "이전에는 일정을 수기로 작성했고, 다이어리를 보지 않으면 잊어버렸다.",
+      "source": "from-user"
+    },
+    {
+      "round": 2,
+      "target": "outcome",
+      "question": "알림을 놓치거나 무시했을 때 앱은 어디까지 책임져야 하나요—한 번만 알림, 확인할 때까지 반복, 일정 완료까지 추적 중 어떤 방식을 원하시나요?",
+      "answer": "알림은 하루에 두 번, 오전 7시와 오후 11시에 전송한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 3,
+      "target": "outcome",
+      "question": "오전 7시에는 오늘 일정, 오후 11시에는 내일 일정 전체를 요약해 알리면 되나요?",
+      "answer": "작성한 일정을 달력이나 알림에서 리스트 형태로 보내면 된다.",
+      "source": "from-user"
+    },
+    {
+      "round": 4,
+      "target": "outcome",
+      "question": "8월 16일에 14:00 병원, 18:00 약속이 있다면 8월 15일 오후 11시와 8월 16일 오전 7시 모두 이 두 일정을 리스트로 보여주는 방식인가요?",
+      "answer": "내일 일정은 내일 오전 7시에 받으면 된다.",
+      "source": "from-user"
+    },
+    {
+      "round": 5,
+      "target": "outcome",
+      "question": "오전 7시에 당일 일정 리스트를 보낸다면, 오후 11시 알림에는 무엇을 보내야 하나요?",
+      "answer": "같은 리스트 중 미완료한 항목을 보내고, 모두 했다면 오늘 할 일 완료라고 보낸다.",
+      "source": "from-user"
+    },
+    {
+      "round": 6,
+      "target": "scope",
+      "question": "일정과 할 일은 같은 항목이며, 사용자가 직접 체크해야만 완료되는 것으로 정의하면 되나요?",
+      "answer": "같은 것이고 사용자가 직접 체크한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 7,
+      "target": "non-goals",
+      "question": "첫 버전은 로그인·여러 기기 동기화·일정 공유·반복 일정·외부 캘린더 연동 없이, 한 휴대폰에서 핵심 기능만 제공해도 되나요?",
+      "answer": "나만 사용할 것이다.",
+      "source": "from-user"
+    },
+    {
+      "round": 8,
+      "target": "constraints",
+      "question": "사용할 휴대폰은 안드로이드, 아이폰, 아니면 둘 다인가요?",
+      "answer": "안드로이드만 사용한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 9,
+      "target": "decision-boundaries",
+      "question": "화면 디자인·데이터 저장 방식·안드로이드 기술 선택은 제가 최소 구성으로 결정하고, 알림 시간이나 핵심 동작이 바뀌는 경우에만 다시 확인하면 되나요?",
+      "answer": "디자인은 TimeBlocks처럼 만들고, 바뀌는 경우에는 사용자가 직접 수정해서 반영하도록 구현한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 10,
+      "target": "decision-boundaries",
+      "question": "사용자가 앱 설정에서 직접 변경할 항목은 오전·오후 알림 시각만 있으면 되나요?",
+      "answer": "알림 시각과 일정 추가·삭제, 주간 및 월간 목표 설정도 직접 변경한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 11,
+      "target": "scope",
+      "question": "주간·월간 목표는 독립된 체크 항목인가요, 아니면 여러 일정을 목표에 연결해 자동 달성률을 계산해야 하나요?",
+      "answer": "목표를 설정하고 관련 할 일을 직접 지정하며, 잘 달성하면 100%로 표시한다.",
+      "source": "from-user"
+    },
+    {
+      "round": 12,
+      "target": "success-criteria",
+      "question": "목표 달성률은 모든 연결된 할 일을 동일한 비중으로 보고, 완료한 할 일 수 ÷ 전체 연결된 할 일 수 × 100으로 계산하면 되나요?",
+      "answer": "맞다.",
+      "source": "from-user"
+    }
+  ],
+  "current_ambiguity": 0.11,
+  "threshold": 0.2,
+  "max_rounds": 12,
+  "challenge_modes_used": [
+    "contrarian",
+    "simplifier",
+    "ontologist"
+  ],
+  "codebase_context": {
+    "workspace_empty": true,
+    "git_repository": false
+  },
+  "current_stage": "feasibility",
+  "current_focus": "success-criteria",
+  "context_snapshot_path": ".omx/context/schedule-notification-app-20260815T141848Z.md",
+  "prompt_safe_summary_status": "not_needed",
+  "readiness": {
+    "non_goals": true,
+    "decision_boundaries": true,
+    "pressure_pass": true,
+    "closure_audit": true
+  },
+  "clarity_scores": {
+    "intent": 0.85,
+    "outcome": 0.9,
+    "scope": 0.92,
+    "constraints": 0.85,
+    "success": 0.95
+  },
+  "research_facts": [
+    {
+      "source": "from-research",
+      "url": "https://www.timeblocks.com/",
+      "fact": "TimeBlocks emphasizes a readable monthly calendar, quick entry directly from the calendar, and simple editing."
+    }
+  ],
+  "run_outcome": "finish",
+  "round_count": 12,
+  "transcript_path": ".omx/interviews/schedule-notification-app-20260815T144846Z.md",
+  "spec_path": ".omx/specs/deep-interview-schedule-notification-app.md",
+  "residual_risks": [
+    "Android notification timing may vary under permission and battery policies",
+    "TimeBlocks is a design-language reference rather than a pixel-copy requirement"
+  ],
+  "completed_at": "2026-08-15T14:50:10.115Z",
+  "lifecycle_outcome": "finished"
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">오늘의 일정</string>
+    <string name="month_title">%1$d년 %2$d월</string>
+    <string name="start_date">시작일  %1$s</string>
+    <string name="end_date">종료일  %1$s</string>
+    <string name="start_time">시작  %1$s</string>
+    <string name="end_time">끝  %1$s</string>
+    <string name="add_start_time">시작 시간</string>
+    <string name="add_end_time">끝 시간</string>
+</resources>
