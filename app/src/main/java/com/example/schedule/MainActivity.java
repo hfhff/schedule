@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -166,20 +167,21 @@ public final class MainActivity extends Activity {
 
         List<ScheduleStore.Item> allItems = store.allItems();
         allItems.removeIf(item -> !ScheduleUiRules.showOnCalendar(item));
-        Map<Long, Integer> colors = RangeColorAssigner.assign(allItems);
+        Map<Long, Integer> lanes = RangeColorAssigner.assign(allItems);
         int offset = visibleMonth.atDay(1).getDayOfWeek().getValue() % 7;
         for (int position = 0; position < 42; position++) {
             int day = position - offset + 1;
             int row = position / 7 + 1;
             int column = position % 7;
             View cell = day >= 1 && day <= visibleMonth.lengthOfMonth()
-                ? dayCell(visibleMonth.atDay(day), column, allItems, colors)
+                ? dayCell(visibleMonth.atDay(day), column)
                 : new View(this);
             calendarGrid.addView(cell, gridParams(row, column, dp(58)));
         }
+        renderScheduleBars(allItems, lanes);
     }
 
-    private View dayCell(LocalDate date, int column, List<ScheduleStore.Item> allItems, Map<Long, Integer> colors) {
+    private View dayCell(LocalDate date, int column) {
         boolean selected = date.equals(selectedDate);
         LinearLayout cell = new LinearLayout(this);
         cell.setOrientation(LinearLayout.VERTICAL);
@@ -193,36 +195,45 @@ public final class MainActivity extends Activity {
 
         TextView number = text(String.valueOf(date.getDayOfMonth()), 13, selected ? Color.WHITE : weekendColor(column, INK), Typeface.BOLD);
         number.setGravity(Gravity.CENTER);
-        cell.addView(number, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(22)));
-
-        int shown = 0;
-        int total = 0;
-        for (ScheduleStore.Item item : allItems) {
-            if (date.isBefore(item.startDate) || date.isAfter(item.endDate)) continue;
-            total++;
-            if (shown == 2) continue;
-            int lane = colors.getOrDefault(item.id, 0);
-            TextView chip = text(item.title, 9, eventTextColor(lane), Typeface.BOLD);
-            chip.setSingleLine(true);
-            chip.setEllipsize(TextUtils.TruncateAt.END);
-            chip.setGravity(Gravity.CENTER);
-            chip.setBackground(rounded(eventColor(lane), 5));
-            LinearLayout.LayoutParams chipParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(15));
-            chipParams.setMargins(0, dp(1), 0, 0);
-            cell.addView(chip, chipParams);
-            shown++;
+        FrameLayout numberLayer = new FrameLayout(this);
+        numberLayer.addView(number, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (date.isBefore(LocalDate.now())) {
+            View diagonal = new View(this);
+            diagonal.setBackgroundColor(number.getCurrentTextColor());
+            diagonal.setRotation(-25f);
+            numberLayer.addView(diagonal, new FrameLayout.LayoutParams(dp(24), dp(1), Gravity.CENTER));
         }
-        if (total > shown) {
-            TextView more = text("+" + (total - shown), 9, selected ? Color.WHITE : MUTED, Typeface.BOLD);
-            more.setGravity(Gravity.CENTER);
-            cell.addView(more, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(13)));
-        }
+        cell.addView(numberLayer, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(22)));
         return cell;
+    }
+
+    private void renderScheduleBars(List<ScheduleStore.Item> items, Map<Long, Integer> lanes) {
+        for (ScheduleStore.Item item : items) {
+            int lane = lanes.getOrDefault(item.id, 0);
+            int colorIndex = ScheduleUiRules.colorIndex(item);
+            if (lane > 2) continue; // ponytail: three visible lanes fit the fixed calendar row; increase row height if real usage exceeds this.
+            for (ScheduleUiRules.CalendarSegment segment : ScheduleUiRules.calendarSegments(item, visibleMonth)) {
+                TextView bar = text(item.title, 8, eventTextColor(colorIndex), Typeface.BOLD);
+                bar.setSingleLine(true);
+                bar.setEllipsize(TextUtils.TruncateAt.END);
+                bar.setGravity(Gravity.CENTER_VERTICAL);
+                bar.setPadding(dp(4), 0, dp(4), 0);
+                bar.setBackground(rounded(eventColor(colorIndex), 4));
+
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.width = 0;
+                params.height = dp(11);
+                params.rowSpec = GridLayout.spec(segment.row);
+                params.columnSpec = GridLayout.spec(segment.column, segment.span, 1f);
+                params.setMargins(dp(2), dp(23 + lane * 12), dp(2), 0);
+                params.setGravity(Gravity.TOP | Gravity.FILL_HORIZONTAL);
+                calendarGrid.addView(bar, params);
+            }
+        }
     }
 
     private void renderSchedules(List<ScheduleStore.Item> items) {
         scheduleList.removeAllViews();
-        Map<Long, Integer> colors = RangeColorAssigner.assign(store.allItems());
         if (items.isEmpty()) {
             TextView empty = text("이 날짜에는 일정이나 할 일이 없습니다.", 15, MUTED, Typeface.NORMAL);
             empty.setGravity(Gravity.CENTER);
@@ -232,34 +243,29 @@ public final class MainActivity extends Activity {
         }
 
         for (ScheduleStore.Item item : items) {
-            int lane = colors.getOrDefault(item.id, 0);
+            int colorIndex = ScheduleUiRules.colorIndex(item);
             LinearLayout card = new LinearLayout(this);
             card.setGravity(Gravity.CENTER_VERTICAL);
             card.setPadding(dp(10), dp(6), dp(6), dp(6));
-            card.setBackground(rounded(eventColor(lane), 14));
+            card.setBackground(rounded(eventColor(colorIndex), 14));
 
             LinearLayout details = new LinearLayout(this);
             details.setOrientation(LinearLayout.VERTICAL);
             String label = "[" + (item.todo ? "할 일" : "일정") + "]  " + timeSpan(item) + item.title;
-            if (item.todo) {
-                CheckBox check = new CheckBox(this);
-                check.setText(label);
-                check.setTextSize(16);
-                check.setTextColor(item.completed ? MUTED : INK);
-                check.setChecked(item.completed);
-                if (item.completed) check.setPaintFlags(check.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                check.setOnCheckedChangeListener((button, completed) -> {
-                    store.setCompleted(item.id, completed);
-                    refresh();
-                });
-                details.addView(check);
-            } else {
-                TextView schedule = text(label, 16, INK, Typeface.BOLD);
-                schedule.setPadding(dp(12), dp(10), 0, dp(8));
-                details.addView(schedule);
-            }
-            if (item.isRange()) {
-                TextView period = text(item.startDate.format(rangeFormat) + " — " + item.endDate.format(rangeFormat), 12, eventTextColor(lane), Typeface.BOLD);
+            CheckBox check = new CheckBox(this);
+            check.setText(label);
+            check.setTextSize(16);
+            check.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            check.setTextColor(item.completed ? MUTED : INK);
+            check.setChecked(item.completed);
+            if (item.completed) check.setPaintFlags(check.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            check.setOnCheckedChangeListener((button, completed) -> {
+                store.setCompleted(item.id, completed);
+                refresh();
+            });
+            details.addView(check);
+            if (ScheduleUiRules.showRange(item)) {
+                TextView period = text(item.startDate.format(rangeFormat) + " — " + item.endDate.format(rangeFormat), 12, eventTextColor(colorIndex), Typeface.BOLD);
                 period.setPadding(dp(12), 0, 0, dp(3));
                 details.addView(period);
             }

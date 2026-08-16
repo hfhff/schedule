@@ -83,7 +83,6 @@ final class ScheduleStore {
                 item.startTime = startTime;
                 item.endTime = endTime;
                 item.todo = todo;
-                if (!todo) item.completed = false;
                 item.quick = quick;
             }
         }

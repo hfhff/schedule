@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,17 @@ public class ScheduleUiRulesTest {
         assertEquals(false, ScheduleUiRules.showOnCalendar(new ScheduleStore.Item(1, start, start, "할 일", false, null, null, true, false)));
         assertEquals(false, ScheduleUiRules.showOnCalendar(new ScheduleStore.Item(2, start, start.plusDays(6), "빠른 일정", false, null, null, false, true)));
         assertEquals(true, ScheduleUiRules.showOnCalendar(new ScheduleStore.Item(3, start, start, "당일 일정", false, null, null, false, false)));
+
+        ScheduleStore.Item trip = new ScheduleStore.Item(4, LocalDate.of(2026, 8, 15), LocalDate.of(2026, 8, 18), "여행", false, null, null, false, false);
+        List<ScheduleUiRules.CalendarSegment> segments = ScheduleUiRules.calendarSegments(trip, YearMonth.of(2026, 8));
+        assertEquals(2, segments.size());
+        assertEquals(1, segments.get(0).span);
+        assertEquals(3, segments.get(1).span);
+
+        ScheduleStore.Item quickTodo = new ScheduleStore.Item(5, start, start.plusDays(6), "운동", false, null, null, true, true);
+        assertEquals(false, ScheduleUiRules.showRange(quickTodo));
+        assertEquals(ScheduleUiRules.colorIndex(trip), ScheduleUiRules.colorIndex(trip));
+        assertEquals(false, ScheduleUiRules.colorIndex(trip) == ScheduleUiRules.colorIndex(quickTodo));
     }
 
     private ScheduleStore.Item item(long id, String title, LocalTime time) {

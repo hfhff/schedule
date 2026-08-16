@@ -26,7 +26,7 @@ public final class ReminderReceiver extends BroadcastReceiver {
         int scheduleCount = 0;
         for (ScheduleStore.Item item : store.itemsFor(LocalDate.now())) {
             if (NotificationScheduler.EVENING.equals(period) && (!item.todo || item.completed)) continue;
-            String range = item.isRange()
+            String range = ScheduleUiRules.showRange(item)
                 ? " · " + item.startDate.getMonthValue() + "/" + item.startDate.getDayOfMonth()
                     + "~" + item.endDate.getMonthValue() + "/" + item.endDate.getDayOfMonth()
                 : "";
