@@ -260,7 +260,7 @@ public final class MainActivity extends Activity {
             check.setChecked(item.completed);
             if (item.completed) check.setPaintFlags(check.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             check.setOnCheckedChangeListener((button, completed) -> {
-                store.setCompleted(item.id, completed);
+                store.setCompleted(item.id, selectedDate, completed);
                 refresh();
             });
             details.addView(check);

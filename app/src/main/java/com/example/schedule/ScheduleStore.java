@@ -11,7 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 final class ScheduleStore {
     private static final String PREFS = "schedule_data";
@@ -26,7 +28,7 @@ final class ScheduleStore {
     synchronized List<Item> itemsFor(LocalDate date) {
         List<Item> result = new ArrayList<>();
         for (Item item : allItems()) {
-            if (!date.isBefore(item.startDate) && !date.isAfter(item.endDate)) result.add(item);
+            if (!date.isBefore(item.startDate) && !date.isAfter(item.endDate)) result.add(item.forDate(date));
         }
         ScheduleUiRules.sortItems(result);
         return result;
@@ -47,7 +49,7 @@ final class ScheduleStore {
                 LocalTime endTime = storedEndTime.isEmpty() ? (startTime == null ? null : startTime.plusHours(1)) : LocalTime.parse(storedEndTime);
                 boolean quick = value.optBoolean("quick");
                 boolean todo = value.has("todo") ? value.optBoolean("todo") : quick || start.equals(end);
-                items.add(new Item(
+                Item item = new Item(
                     value.getLong("id"),
                     start,
                     end,
@@ -57,7 +59,16 @@ final class ScheduleStore {
                     endTime,
                     todo,
                     quick
-                ));
+                );
+                JSONArray completedDates = value.optJSONArray("completedDates");
+                if (completedDates != null) {
+                    for (int j = 0; j < completedDates.length(); j++) {
+                        item.completedDates.add(LocalDate.parse(completedDates.getString(j)));
+                    }
+                } else if (item.completed && item.usesDailyCompletion()) {
+                    for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) item.completedDates.add(date);
+                }
+                items.add(item);
             }
         } catch (JSONException | RuntimeException ignored) {
             // A corrupt local file is treated as empty; there is intentionally no cloud backup.
@@ -89,9 +100,17 @@ final class ScheduleStore {
         saveItems(items);
     }
 
-    synchronized void setCompleted(long id, boolean completed) {
+    synchronized void setCompleted(long id, LocalDate date, boolean completed) {
         List<Item> items = allItems();
-        for (Item item : items) if (item.id == id) item.completed = completed;
+        for (Item item : items) {
+            if (item.id != id) continue;
+            if (item.usesDailyCompletion()) {
+                if (completed) item.completedDates.add(date);
+                else item.completedDates.remove(date);
+            } else {
+                item.completed = completed;
+            }
+        }
         saveItems(items);
     }
 
@@ -147,6 +166,11 @@ final class ScheduleStore {
                 if (item.endTime != null) value.put("endTime", item.endTime.toString());
                 value.put("todo", item.todo);
                 value.put("quick", item.quick);
+                if (!item.completedDates.isEmpty()) {
+                    JSONArray completedDates = new JSONArray();
+                    for (LocalDate date : item.completedDates) completedDates.put(date.toString());
+                    value.put("completedDates", completedDates);
+                }
                 array.put(value);
             } catch (JSONException ignored) {
                 return;
@@ -165,6 +189,7 @@ final class ScheduleStore {
         LocalTime endTime;
         boolean todo;
         boolean quick;
+        final Set<LocalDate> completedDates = new HashSet<>();
 
         Item(long id, LocalDate startDate, LocalDate endDate, String title, boolean completed, LocalTime startTime, LocalTime endTime, boolean todo, boolean quick) {
             this.id = id;
@@ -180,6 +205,20 @@ final class ScheduleStore {
 
         boolean isRange() {
             return !startDate.equals(endDate);
+        }
+
+        boolean usesDailyCompletion() {
+            return quick && isRange();
+        }
+
+        boolean completedFor(LocalDate date) {
+            return usesDailyCompletion() ? completedDates.contains(date) : completed;
+        }
+
+        Item forDate(LocalDate date) {
+            Item copy = new Item(id, startDate, endDate, title, completedFor(date), startTime, endTime, todo, quick);
+            copy.completedDates.addAll(completedDates);
+            return copy;
         }
     }
 }

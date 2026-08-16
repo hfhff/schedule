@@ -47,6 +47,10 @@ public class ScheduleUiRulesTest {
         assertEquals(false, ScheduleUiRules.showRange(quickTodo));
         assertEquals(ScheduleUiRules.colorIndex(trip), ScheduleUiRules.colorIndex(trip));
         assertEquals(false, ScheduleUiRules.colorIndex(trip) == ScheduleUiRules.colorIndex(quickTodo));
+
+        quickTodo.completedDates.add(start);
+        assertEquals(true, quickTodo.completedFor(start));
+        assertEquals(false, quickTodo.completedFor(start.plusDays(1)));
     }
 
     private ScheduleStore.Item item(long id, String title, LocalTime time) {
