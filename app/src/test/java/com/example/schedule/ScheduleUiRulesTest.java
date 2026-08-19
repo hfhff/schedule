@@ -51,6 +51,11 @@ public class ScheduleUiRulesTest {
         quickTodo.completedDates.add(start);
         assertEquals(true, quickTodo.completedFor(start));
         assertEquals(false, quickTodo.completedFor(start.plusDays(1)));
+
+        ScheduleStore.Item quickSingleDay = new ScheduleStore.Item(6, start, start, "오늘만", false, null, null, true, true);
+        quickSingleDay.completedDates.add(start);
+        assertEquals(true, quickSingleDay.completedFor(start));
+        assertEquals(false, quickSingleDay.completedFor(start.plusDays(1)));
     }
 
     private ScheduleStore.Item item(long id, String title, LocalTime time) {

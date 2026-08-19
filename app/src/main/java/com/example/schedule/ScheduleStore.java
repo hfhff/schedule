@@ -208,7 +208,7 @@ final class ScheduleStore {
         }
 
         boolean usesDailyCompletion() {
-            return quick && isRange();
+            return quick;
         }
 
         boolean completedFor(LocalDate date) {
