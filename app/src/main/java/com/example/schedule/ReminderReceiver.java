@@ -54,7 +54,7 @@ public final class ReminderReceiver extends BroadcastReceiver {
         Notification notification = new Notification.Builder(context, NotificationScheduler.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
-            .setContentText(lines.size() == 1 ? lines.get(0) : lines.size() + "개 항목")
+            .setContentText(scheduleCount == 0 ? lines.get(lines.size() - 1) : scheduleCount + "개 항목")
             .setStyle(style)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)

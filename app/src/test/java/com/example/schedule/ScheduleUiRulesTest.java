@@ -56,6 +56,10 @@ public class ScheduleUiRulesTest {
         quickSingleDay.completedDates.add(start);
         assertEquals(true, quickSingleDay.completedFor(start));
         assertEquals(false, quickSingleDay.completedFor(start.plusDays(1)));
+
+        trip.completedDates.add(start);
+        assertEquals(true, trip.completedFor(start));
+        assertEquals(false, trip.completedFor(start.plusDays(1)));
     }
 
     private ScheduleStore.Item item(long id, String title, LocalTime time) {

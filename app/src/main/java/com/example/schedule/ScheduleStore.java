@@ -166,7 +166,7 @@ final class ScheduleStore {
                 if (item.endTime != null) value.put("endTime", item.endTime.toString());
                 value.put("todo", item.todo);
                 value.put("quick", item.quick);
-                if (!item.completedDates.isEmpty()) {
+                if (item.usesDailyCompletion()) {
                     JSONArray completedDates = new JSONArray();
                     for (LocalDate date : item.completedDates) completedDates.put(date.toString());
                     value.put("completedDates", completedDates);
@@ -208,7 +208,7 @@ final class ScheduleStore {
         }
 
         boolean usesDailyCompletion() {
-            return quick;
+            return quick || isRange();
         }
 
         boolean completedFor(LocalDate date) {
